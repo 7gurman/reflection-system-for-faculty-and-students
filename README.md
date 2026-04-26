@@ -11,14 +11,14 @@ Reflect is a full-stack web application where students submit weekly/daily learn
 
 ## 🗂️ Rubric Coverage
 
-| # | Criterion | Marks | How it's addressed |
+| # | How it's addressed |
 |---|-----------|-------|--------------------|
-| 2 | Hosting & Live Deployment | 15 | Deployed on **Render** (backend) + **Vercel** (frontend) — see Deployment section |
-| 3 | Backend Architecture & API Design | 15 | Express.js REST API with 15+ endpoints, MVC structure, rate limiting, Helmet security |
-| 4 | Database Design & Data Handling | 15 | MongoDB + Mongoose with proper schemas, indexes, population, and aggregation pipelines |
-| 5 | Authentication & Basic Security | 10 | JWT auth, bcrypt password hashing, role-based access control (student/faculty), input validation |
-| 6 | Presentation & Viva | 10 | Polished UI, live demo, all features working end-to-end |
-| 7 | Documentation | 15 | This README + inline JSDoc-style comments throughout codebase |
+| 2 | Hosting & Live Deployment | Deployed on **Render** (backend) + **Vercel** (frontend) — see Deployment section |
+| 3 | Backend Architecture & API Design  | Express.js REST API with 15+ endpoints, MVC structure, rate limiting, Helmet security |
+| 4 | Database Design & Data Handling | MongoDB + Mongoose with proper schemas, indexes, population, and aggregation pipelines |
+| 5 | Authentication & Basic Security | JWT auth, bcrypt password hashing, role-based access control (student/faculty), input validation |
+| 6 | Presentation & Viva | Polished UI, live demo, all features working end-to-end |
+| 7 | Documentation | This README + inline JSDoc-style comments throughout codebase |
 
 ---
 
