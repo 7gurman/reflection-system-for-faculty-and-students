@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Reflect — Student Learning Reflection System</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F4F2ED;
+  --surface:#FFFFFF;
+  --border:rgba(0,0,0,0.09);
+  --text:#18181A;
+  --muted:#6A6A6E;
+  --subtle:#9A9A9E;
+  --accent:#2B5C3F;
+  --accent-bg:#EAF3DE;
+  --accent-mid:#3B6D11;
+  --warn:#BA7517;
+  --warn-bg:#FAEEDA;
+  --info:#185FA5;
+  --info-bg:#E6F1FB;
+  --danger:#A32D2D;
+  --danger-bg:#FCEBEB;
+  --r:12px;--rs:8px;--rx:16px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;min-height:100vh;overflow-x:hidden}
+.serif{font-family:'Fraunces',serif;font-weight:400}
+
+/* ── Shell ── */
+.shell{display:flex;height:100vh;overflow:hidden}
+
+/* ── Sidebar ── */
+.sidebar{width:230px;flex-shrink:0;background:var(--surface);border-right:0.5px solid var(--border);display:flex;flex-direction:column;padding:0}
+.sb-logo{padding:1.5rem 1.25rem 1.25rem;border-bottom:0.5px solid var(--border)}
+.sb-logo h1{font-family:'Fraunces',serif;font-size:18px;font-weight:400;color:var(--accent);letter-spacing:-0.02em}
+.sb-logo p{font-size:11px;color:var(--subtle);margin-top:1px}
+.sb-nav{padding:1rem 0.75rem;flex:1;overflow-y:auto}
+.nav-section{margin-bottom:1.25rem}
+.nav-group-label{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--subtle);padding:0 0.5rem;margin-bottom:0.3rem}
+.nav-btn{display:flex;align-items:center;gap:9px;width:100%;padding:7px 10px;border:none;background:none;border-radius:var(--rs);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--muted);transition:all 0.12s;text-align:left}
+.nav-btn:hover{background:var(--bg);color:var(--text)}
+.nav-btn.active{background:var(--accent-bg);color:var(--accent-mid);font-weight:500}
+.nav-btn svg{width:15px;height:15px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:1.5}
+.sb-footer{padding:1rem 1.25rem;border-top:0.5px solid var(--border)}
+.sb-footer p{font-size:11px;color:var(--subtle);margin-bottom:0.4rem}
+.role-tabs{display:flex;background:var(--bg);border-radius:var(--rs);padding:3px;gap:3px}
+.role-tab{flex:1;padding:5px 8px;border:none;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;background:none;color:var(--muted);transition:all 0.12s}
+.role-tab.active{background:var(--surface);color:var(--text);font-weight:500;box-shadow:0 0.5px 2px rgba(0,0,0,0.08)}
+
+/* ── Main ── */
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+.topbar{padding:1rem 2rem;border-bottom:0.5px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;gap:1rem}
+.topbar-left h2{font-family:'Fraunces',serif;font-size:20px;font-weight:400;color:var(--text)}
+.topbar-left p{font-size:12px;color:var(--subtle);margin-top:1px}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.user-chip{display:flex;align-items:center;gap:8px;padding:5px 10px;background:var(--bg);border-radius:100px;font-size:12px}
+.user-dot{width:22px;height:22px;border-radius:50%;background:var(--accent-bg);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:var(--accent-mid)}
+.content{padding:1.5rem 2rem;flex:1}
+
+/* ── Cards ── */
+.card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r);padding:1.25rem;margin-bottom:1rem}
+.card-sm{padding:1rem}
+.card-title{font-weight:500;font-size:14px;margin-bottom:2px}
+.card-sub{font-size:12px;color:var(--muted)}
+.card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1rem;gap:1rem}
+
+/* ── Stats ── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem}
+.stat-box{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--rs);padding:1rem}
+.stat-label{font-size:11px;color:var(--muted);margin-bottom:4px}
+.stat-val{font-family:'Fraunces',serif;font-size:28px;font-weight:300;color:var(--text);line-height:1}
+.stat-note{font-size:11px;color:var(--accent-mid);margin-top:3px}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:none;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.12s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-mid)}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed}
+.btn-ghost{background:transparent;border:0.5px solid var(--border);color:var(--muted)}
+.btn-ghost:hover{background:var(--bg);color:var(--text)}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-danger{background:var(--danger-bg);color:var(--danger);border:0.5px solid rgba(163,45,45,0.2)}
+.btn-danger:hover{background:#F7C1C1}
+
+/* ── Badges ── */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:100px;font-size:11px;font-weight:500}
+.badge-green{background:var(--accent-bg);color:var(--accent-mid)}
+.badge-amber{background:var(--warn-bg);color:var(--warn)}
+.badge-blue{background:var(--info-bg);color:var(--info)}
+.badge-gray{background:#F1EFE8;color:#5F5E5A}
+
+/* ── Form ── */
+.form-group{margin-bottom:1rem}
+.form-label{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:0.35rem}
+.form-input,.form-select,.form-textarea{width:100%;padding:8px 11px;border:0.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);background:var(--bg);outline:none;transition:border-color 0.12s,background 0.12s}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);background:var(--surface)}
+.form-textarea{resize:vertical;min-height:90px;line-height:1.65}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem}
+.form-hint{font-size:11px;color:var(--subtle);margin-top:3px}
+
+/* ── Reflection Items ── */
+.reflection-list{display:flex;flex-direction:column;gap:8px}
+.ri{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r);padding:1.1rem 1.25rem;cursor:pointer;transition:border-color 0.12s}
+.ri:hover{border-color:rgba(43,92,63,0.3)}
+.ri.selected{border-color:var(--accent);background:#FAFFF8}
+.ri-top{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:6px}
+.ri-subject{font-weight:500;font-size:14px}
+.ri-meta{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--subtle)}
+.ri-preview{font-size:12px;color:var(--muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ri-footer{display:flex;align-items:center;gap:6px;margin-top:8px;flex-wrap:wrap}
+.tag{display:inline-flex;padding:2px 7px;background:var(--bg);border:0.5px solid var(--border);border-radius:100px;font-size:11px;color:var(--muted)}
+.mood-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.mood-great{background:#63991b}.mood-good{background:#1D9E75}.mood-okay{background:#BA7517}.mood-struggling{background:#A32D2D}
+
+/* ── Detail Panel ── */
+.panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.15);z-index:50;opacity:0;pointer-events:none;transition:opacity 0.2s}
+.panel-overlay.open{opacity:1;pointer-events:all}
+.detail-panel{position:fixed;right:0;top:0;bottom:0;width:440px;background:var(--surface);border-left:0.5px solid var(--border);z-index:51;overflow-y:auto;transform:translateX(100%);transition:transform 0.25s cubic-bezier(0.4,0,0.2,1)}
+.detail-panel.open{transform:translateX(0)}
+.dp-head{padding:1.25rem;border-bottom:0.5px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;position:sticky;top:0;background:var(--surface);z-index:1}
+.dp-close{background:none;border:none;cursor:pointer;color:var(--muted);width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.dp-close:hover{background:var(--bg)}
+.dp-body{padding:1.25rem}
+.dp-section{margin-bottom:1.25rem}
+.dp-label{font-size:10px;font-weight:500;color:var(--subtle);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.4rem}
+.dp-text{font-size:13px;line-height:1.75;color:var(--text)}
+.dp-divider{height:0.5px;background:var(--border);margin:1.25rem 0}
+.feedback-box{background:var(--accent-bg);border:0.5px solid rgba(43,92,63,0.2);border-radius:var(--rs);padding:1rem;margin-bottom:0.75rem}
+.feedback-box p{font-size:13px;line-height:1.7;color:var(--accent-mid)}
+.feedback-meta{font-size:11px;color:var(--accent);margin-top:6px;display:flex;align-items:center;gap:8px}
+.stars{color:#BA7517;letter-spacing:1px}
+
+/* ── AI typing ── */
+.ai-loading{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);padding:1rem;background:var(--bg);border-radius:var(--rs)}
+.dots{display:flex;gap:3px}
+.dots span{width:5px;height:5px;border-radius:50%;background:var(--muted);animation:blink 1.2s infinite}
+.dots span:nth-child(2){animation-delay:0.2s}
+.dots span:nth-child(3){animation-delay:0.4s}
+@keyframes blink{0%,80%,100%{opacity:0.2}40%{opacity:1}}
+
+/* ── Tabs ── */
+.tabs{display:flex;gap:2px;background:var(--bg);border-radius:var(--rs);padding:3px;margin-bottom:1.25rem}
+.tab-btn{flex:1;padding:6px 10px;border:none;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;background:none;color:var(--muted);transition:all 0.12s}
+.tab-btn.active{background:var(--surface);color:var(--text);font-weight:500;box-shadow:0 0.5px 2px rgba(0,0,0,0.07)}
+
+/* ── Student list ── */
+.student-table{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r);overflow:hidden}
+.student-row{display:flex;align-items:center;gap:12px;padding:0.875rem 1.25rem;border-bottom:0.5px solid var(--border);transition:background 0.1s}
+.student-row:hover{background:var(--bg);cursor:pointer}
+.student-row:last-child{border-bottom:none}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--accent-bg);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--accent-mid);flex-shrink:0}
+.sname{font-weight:500;font-size:13px}
+.smeta{font-size:11px;color:var(--muted)}
+.sright{margin-left:auto;display:flex;align-items:center;gap:8px}
+.progress-wrap{width:64px}
+.progress-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;background:var(--accent);border-radius:2px}
+
+/* ── Filter row ── */
+.filter-row{display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap;align-items:center}
+.filter-row .form-input{flex:1;min-width:140px}
+.filter-row .form-select{width:auto}
+
+/* ── Auth screens ── */
+.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:1rem}
+.auth-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--rx);padding:2.5rem;width:100%;max-width:420px}
+.auth-logo{text-align:center;margin-bottom:2rem}
+.auth-logo h1{font-family:'Fraunces',serif;font-size:28px;font-weight:400;color:var(--accent)}
+.auth-logo p{font-size:13px;color:var(--muted);margin-top:4px}
+.auth-switch{text-align:center;margin-top:1.25rem;font-size:13px;color:var(--muted)}
+.auth-switch button{background:none;border:none;color:var(--accent);cursor:pointer;font-size:13px;font-weight:500}
+.error-msg{background:var(--danger-bg);color:var(--danger);padding:10px 12px;border-radius:var(--rs);font-size:13px;margin-bottom:1rem;border:0.5px solid rgba(163,45,45,0.2)}
+.success-msg{background:var(--accent-bg);color:var(--accent-mid);padding:10px 12px;border-radius:var(--rs);font-size:13px;margin-bottom:1rem}
+
+/* ── Page views ── */
+.page{display:none}
+.page.active{display:block}
+
+/* ── Empty ── */
+.empty{text-align:center;padding:3rem 1rem;color:var(--muted)}
+.empty-icon{font-size:36px;margin-bottom:0.75rem}
+
+/* ── Divider ── */
+.divider{height:0.5px;background:var(--border);margin:1.25rem 0}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--text);color:#fff;padding:10px 16px;border-radius:var(--rs);font-size:13px;z-index:999;opacity:0;transform:translateY(8px);transition:all 0.2s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+
+/* ── Responsive ── */
+@media(max-width:768px){.sidebar{display:none}.stats-grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen">
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <h1>Reflect</h1>
+      <p>Student Learning Reflection System</p>
+    </div>
+
+    <div id="login-form">
+      <div id="login-error" class="error-msg" style="display:none"></div>
+      <div class="form-group">
+        <label class="form-label">Email address</label>
+        <input class="form-input" type="email" id="login-email" placeholder="you@example.com"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" type="password" id="login-password" placeholder="••••••••"/>
+      </div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:0.5rem" onclick="handleLogin()">Sign in</button>
+      <div class="auth-switch">Don't have an account? <button onclick="showRegister()">Create one</button></div>
+      <div style="margin-top:1rem;padding:0.75rem;background:var(--bg);border-radius:var(--rs);font-size:12px;color:var(--muted)">
+        <strong style="color:var(--text)">Demo accounts:</strong><br/>
+        Student: student@demo.com / demo123<br/>
+        Faculty: faculty@demo.com / demo123
+      </div>
+    </div>
+
+    <div id="register-form" style="display:none">
+      <div id="reg-error" class="error-msg" style="display:none"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Full Name</label><input class="form-input" id="reg-name" placeholder="Your name"/></div>
+        <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" id="reg-email" placeholder="you@example.com"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Password</label><input class="form-input" type="password" id="reg-password" placeholder="Min. 6 characters"/></div>
+        <div class="form-group">
+          <label class="form-label">Role</label>
+          <select class="form-select" id="reg-role"><option value="student">Student</option><option value="faculty">Faculty</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Registration No.</label><input class="form-input" id="reg-regno" placeholder="e.g. 2022CS001"/></div>
+        <div class="form-group"><label class="form-label">Course Code</label><input class="form-input" id="reg-course" placeholder="e.g. CS401"/></div>
+      </div>
+      <div class="form-group"><label class="form-label">Team Name</label><input class="form-input" id="reg-team" placeholder="e.g. Team Alpha"/></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="handleRegister()">Create account</button>
+      <div class="auth-switch">Already have an account? <button onclick="showLogin()">Sign in</button></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- APP SHELL -->
+<div id="app-shell" style="display:none">
+<div class="shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <h1>Reflect</h1>
+      <p>Learning Journal</p>
+    </div>
+
+    <div class="sb-nav">
+      <div class="nav-section" id="student-nav">
+        <div class="nav-group-label">Student</div>
+        <button class="nav-btn active" onclick="goto('s-dashboard')">
+          <svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
+          Dashboard
+        </button>
+        <button class="nav-btn" onclick="goto('s-submit')">
+          <svg viewBox="0 0 16 16"><path d="M8 2v12M2 8h12" stroke-linecap="round"/></svg>
+          New Reflection
+        </button>
+        <button class="nav-btn" onclick="goto('s-journal')">
+          <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2" stroke-linecap="round"/></svg>
+          My Journal
+        </button>
+      </div>
+
+      <div class="nav-section" id="faculty-nav" style="display:none">
+        <div class="nav-group-label">Faculty</div>
+        <button class="nav-btn active" onclick="goto('f-dashboard')">
+          <svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
+          Overview
+        </button>
+        <button class="nav-btn" onclick="goto('f-students')">
+          <svg viewBox="0 0 16 16"><circle cx="6" cy="5" r="3"/><path d="M1 14c0-3 2.686-5 5-5s5 2 5 5" stroke-linecap="round"/><circle cx="13" cy="5" r="2"/><path d="M13 11c1.5 0 2.5 1 2.5 3" stroke-linecap="round"/></svg>
+          Students
+        </button>
+        <button class="nav-btn" onclick="goto('f-queue')">
+          <svg viewBox="0 0 16 16"><path d="M3 4h10M3 8h6M3 12h8" stroke-linecap="round"/></svg>
+          Review Queue
+        </button>
+      </div>
+    </div>
+
+    <div class="sb-footer">
+      <div id="sb-user" style="margin-bottom:0.75rem;font-size:12px;color:var(--muted)"></div>
+      <div class="role-tabs">
+        <button class="role-tab active" id="rt-student" onclick="switchRole('student')">Student</button>
+        <button class="role-tab" id="rt-faculty" onclick="switchRole('faculty')">Faculty</button>
+      </div>
+      <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;margin-top:0.75rem" onclick="logout()">Sign out</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <h2 id="page-title" class="serif">Dashboard</h2>
+        <p id="page-sub"></p>
+      </div>
+      <div class="topbar-right">
+        <div class="user-chip">
+          <div class="user-dot" id="user-initial">S</div>
+          <span id="user-name-chip">Student</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ── STUDENT DASHBOARD ── -->
+      <div id="s-dashboard" class="page active">
+        <div class="stats-grid" id="s-stats">
+          <div class="stat-box"><div class="stat-label">Total Reflections</div><div class="stat-val" id="st-total">0</div></div>
+          <div class="stat-box"><div class="stat-label">Reviewed</div><div class="stat-val" id="st-reviewed">0</div><div class="stat-note">Faculty feedback received</div></div>
+          <div class="stat-box"><div class="stat-label">Pending Review</div><div class="stat-val" id="st-pending">0</div></div>
+          <div class="stat-box"><div class="stat-label">Subjects Covered</div><div class="stat-val" id="st-subjects">0</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">Recent Reflections</div><div class="card-sub">Your latest journal entries</div></div><button class="btn btn-primary btn-sm" onclick="goto('s-submit')">+ New</button></div>
+          <div id="s-recent-list"><div class="empty"><div class="empty-icon">📝</div><p>No reflections yet. Start journaling your learning!</p></div></div>
+        </div>
+      </div>
+
+      <!-- ── NEW REFLECTION ── -->
+      <div id="s-submit" class="page">
+        <div class="card" style="max-width:720px">
+          <div class="card-header"><div><div class="card-title">New Reflection</div><div class="card-sub">Document your learning progress</div></div></div>
+          <div id="submit-success" class="success-msg" style="display:none">✓ Reflection submitted successfully!</div>
+          <div id="submit-error" class="error-msg" style="display:none"></div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Subject / Module</label>
+              <input class="form-input" id="f-subject" placeholder="e.g. Data Structures, Web Dev"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Period</label>
+              <select class="form-select" id="f-period"><option value="weekly">Weekly</option><option value="daily">Daily</option></select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Date</label>
+              <input class="form-input" type="date" id="f-date"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Week Number</label>
+              <input class="form-input" type="number" id="f-week" placeholder="e.g. 4" min="1" max="52"/>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">What did you study this week?</label>
+            <textarea class="form-textarea" id="f-studied" placeholder="Describe the topics, chapters, or materials you covered..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Concepts you understood well</label>
+            <textarea class="form-textarea" id="f-understood" placeholder="Which concepts clicked for you? What made sense?"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Challenges you faced</label>
+            <textarea class="form-textarea" id="f-challenges" placeholder="What was difficult? Where did you get stuck?"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Next steps / Plan</label>
+            <textarea class="form-textarea" style="min-height:70px" id="f-nextsteps" placeholder="What will you focus on next?"></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">How did you feel this week?</label>
+              <select class="form-select" id="f-mood">
+                <option value="great">😊 Great — really clicked</option>
+                <option value="good" selected>🙂 Good — steady progress</option>
+                <option value="okay">😐 Okay — getting through it</option>
+                <option value="struggling">😔 Struggling — need help</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tags (comma separated)</label>
+              <input class="form-input" id="f-tags" placeholder="e.g. algorithms, python, graphs"/>
+              <div class="form-hint">Help categorize your entry</div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:8px;margin-top:0.5rem">
+            <button class="btn btn-primary" onclick="submitReflection()" id="submit-btn">Submit Reflection</button>
+            <button class="btn btn-ghost" onclick="clearForm()">Clear</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── JOURNAL ── -->
+      <div id="s-journal" class="page">
+        <div class="filter-row">
+          <input class="form-input" placeholder="Search by subject or content..." oninput="filterJournal(this.value)"/>
+          <select class="form-select" onchange="filterByStatus(this.value)">
+            <option value="">All status</option>
+            <option value="submitted">Pending</option>
+            <option value="reviewed">Reviewed</option>
+          </select>
+        </div>
+        <div id="journal-list" class="reflection-list"></div>
+      </div>
+
+      <!-- ── FACULTY DASHBOARD ── -->
+      <div id="f-dashboard" class="page">
+        <div class="stats-grid" id="f-stats">
+          <div class="stat-box"><div class="stat-label">Total Students</div><div class="stat-val" id="ft-students">0</div></div>
+          <div class="stat-box"><div class="stat-label">Total Reflections</div><div class="stat-val" id="ft-total">0</div></div>
+          <div class="stat-box"><div class="stat-label">Pending Review</div><div class="stat-val" id="ft-pending">0</div><div class="stat-note">Awaiting your feedback</div></div>
+          <div class="stat-box"><div class="stat-label">This Week</div><div class="stat-val" id="ft-recent">0</div><div class="stat-note">New submissions</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">Subject Breakdown</div><div class="card-sub">Reflections by subject</div></div></div>
+          <div id="f-subject-breakdown"></div>
+        </div>
+      </div>
+
+      <!-- ── FACULTY STUDENTS ── -->
+      <div id="f-students" class="page">
+        <div class="student-table" id="student-list"></div>
+      </div>
+
+      <!-- ── FACULTY REVIEW QUEUE ── -->
+      <div id="f-queue" class="page">
+        <div id="queue-list" class="reflection-list"></div>
+      </div>
+
+    </div><!-- /content -->
+  </main>
+</div><!-- /shell -->
+</div><!-- /app-shell -->
+
+<!-- DETAIL PANEL -->
+<div class="panel-overlay" id="panel-overlay" onclick="closePanel()"></div>
+<div class="detail-panel" id="detail-panel">
+  <div class="dp-head">
+    <div>
+      <div style="font-weight:500;font-size:15px" id="dp-subject">Subject</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px" id="dp-meta"></div>
+    </div>
+    <button class="dp-close" onclick="closePanel()">×</button>
+  </div>
+  <div class="dp-body" id="dp-body"></div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ──────────────────────────────────────────────
+// DEMO DATA (replaces real API for offline demo)
+// ──────────────────────────────────────────────
+const DEMO_USERS = {
+  'student@demo.com': { id:'u1', name:'Arjun Sharma', email:'student@demo.com', role:'student', registrationNumber:'2022CS001', courseCode:'CS401', teamName:'Team Alpha' },
+  'faculty@demo.com': { id:'u2', name:'Dr. Priya Mehta', email:'faculty@demo.com', role:'faculty' },
+};
+
+const DEMO_STUDENTS = [
+  { id:'u1', name:'Arjun Sharma', email:'student@demo.com', registrationNumber:'2022CS001', courseCode:'CS401', teamName:'Team Alpha', stats:{total:5,reviewed:3,pending:2} },
+  { id:'u3', name:'Neha Kapoor', email:'neha@demo.com', registrationNumber:'2022CS002', courseCode:'CS401', teamName:'Team Beta', stats:{total:4,reviewed:4,pending:0} },
+  { id:'u4', name:'Rohan Verma', email:'rohan@demo.com', registrationNumber:'2022CS003', courseCode:'CS401', teamName:'Team Alpha', stats:{total:3,reviewed:1,pending:2} },
+  { id:'u5', name:'Simran Kaur', email:'simran@demo.com', registrationNumber:'2022CS004', courseCode:'CS401', teamName:'Team Gamma', stats:{total:6,reviewed:5,pending:1} },
+];
+
+let REFLECTIONS = [
+  { id:'r1', student:{name:'Arjun Sharma',registrationNumber:'2022CS001'}, subject:'Data Structures', periodType:'weekly', weekNumber:4, date:'2026-04-18', studiedTopics:'Studied binary trees, AVL trees, and their rotation operations. Covered pre-order, in-order, and post-order traversals with recursive implementations.', conceptsUnderstood:'AVL rotations clicked after implementing them manually. The balance factor concept is now clear.', challengesFaced:'Struggled with double rotations (RL and LR cases). Need more practice.', nextSteps:'Practice tree problems on LeetCode. Revisit heaps next week.', mood:'good', tags:['trees','algorithms','avl'], status:'reviewed', feedback:[{faculty:{name:'Dr. Priya Mehta'}, text:'Excellent reflection, Arjun. Your understanding of AVL rotations shows depth. For the double rotations, try visualizing each step on paper — it really helps. Great job keeping up the weekly habit!', rating:4, createdAt:'2026-04-20'}], createdAt:'2026-04-18' },
+  { id:'r2', student:{name:'Arjun Sharma',registrationNumber:'2022CS001'}, subject:'Web Development', periodType:'weekly', weekNumber:5, date:'2026-04-21', studiedTopics:'Started React. Learned about components, props, and state management using useState hook. Built a small todo app.', conceptsUnderstood:'Component-based architecture makes sense now. useState lifecycle is clear.', challengesFaced:'useEffect hook is confusing. Not sure when to use the dependency array.', nextSteps:'Build a small project using useEffect. Read the official React docs.', mood:'okay', tags:['react','javascript','frontend'], status:'submitted', feedback:[], createdAt:'2026-04-21' },
+  { id:'r3', student:{name:'Neha Kapoor',registrationNumber:'2022CS002'}, subject:'Database Systems', periodType:'weekly', weekNumber:5, date:'2026-04-22', studiedTopics:'Covered SQL joins — INNER, LEFT, RIGHT, FULL OUTER. Practiced normalization up to 3NF.', conceptsUnderstood:'3NF normalization is now crystal clear. Joins with multiple conditions feel natural.', challengesFaced:'FULL OUTER JOIN behaves differently across MySQL and PostgreSQL.', nextSteps:'Practice subqueries and window functions.', mood:'great', tags:['sql','databases','normalization'], status:'submitted', feedback:[], createdAt:'2026-04-22' },
+  { id:'r4', student:{name:'Rohan Verma',registrationNumber:'2022CS003'}, subject:'Operating Systems', periodType:'weekly', weekNumber:5, date:'2026-04-23', studiedTopics:'Process scheduling algorithms — FCFS, SJF, Round Robin, Priority Scheduling.', conceptsUnderstood:'Round Robin with context switching is clear. Gantt charts help visualize.', challengesFaced:'Preemptive SJF (SRTF) calculation is tricky when processes arrive mid-execution.', nextSteps:'Solve 10 scheduling problems. Study deadlock detection next.', mood:'struggling', tags:['os','scheduling','processes'], status:'submitted', feedback:[], createdAt:'2026-04-23' },
+  { id:'r5', student:{name:'Arjun Sharma',registrationNumber:'2022CS001'}, subject:'Data Structures', periodType:'weekly', weekNumber:3, date:'2026-04-11', studiedTopics:'Graph theory basics — BFS and DFS traversals. Implemented both iteratively and recursively.', conceptsUnderstood:'BFS using queue and DFS using stack/recursion both make sense now.', challengesFaced:'Detecting cycles in directed graphs was confusing at first.', nextSteps:'Study Dijkstra shortest path. Review topological sort.', mood:'good', tags:['graphs','bfs','dfs'], status:'reviewed', feedback:[{faculty:{name:'Dr. Priya Mehta'}, text:'Great work on graphs! Cycle detection in directed graphs using DFS coloring (white/gray/black) is a key concept — make sure to master it.', rating:5, createdAt:'2026-04-13'}], createdAt:'2026-04-11' },
+];
+
+// ──────────────────────────────────────────────
+// STATE
+// ──────────────────────────────────────────────
+let currentUser = null;
+let currentRole = 'student';
+let currentPage = 's-dashboard';
+let selectedReflection = null;
+let journalFilter = '';
+let statusFilter = '';
+
+// ──────────────────────────────────────────────
+// AUTH
+// ──────────────────────────────────────────────
+function handleLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-password').value;
+  const err = document.getElementById('login-error');
+  const user = DEMO_USERS[email];
+  if (!user || pass !== 'demo123') {
+    err.style.display='block';
+    err.textContent='Invalid email or password. Try the demo accounts below.';
+    return;
+  }
+  err.style.display='none';
+  currentUser = user;
+  currentRole = user.role;
+  bootApp();
+}
+
+function handleRegister() {
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pass = document.getElementById('reg-password').value;
+  const err = document.getElementById('reg-error');
+  if (!name||!email||!pass) { err.style.display='block'; err.textContent='All fields are required.'; return; }
+  if (pass.length < 6) { err.style.display='block'; err.textContent='Password must be at least 6 characters.'; return; }
+  currentUser = {
+    id:'u-new', name, email, role: document.getElementById('reg-role').value,
+    registrationNumber: document.getElementById('reg-regno').value,
+    courseCode: document.getElementById('reg-course').value,
+    teamName: document.getElementById('reg-team').value,
+  };
+  currentRole = currentUser.role;
+  err.style.display='none';
+  bootApp();
+}
+
+function showRegister(){ document.getElementById('login-form').style.display='none'; document.getElementById('register-form').style.display='block'; }
+function showLogin(){ document.getElementById('register-form').style.display='none'; document.getElementById('login-form').style.display='block'; }
+
+function logout(){
+  currentUser=null; currentRole='student';
+  document.getElementById('auth-screen').style.display='flex';
+  document.getElementById('app-shell').style.display='none';
+  document.getElementById('login-email').value=''; document.getElementById('login-password').value='';
+}
+
+function bootApp(){
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('app-shell').style.display='block';
+  document.getElementById('user-name-chip').textContent=currentUser.name.split(' ')[0];
+  document.getElementById('user-initial').textContent=currentUser.name[0];
+  document.getElementById('sb-user').textContent=currentUser.name;
+  setRole(currentUser.role, true);
+  if(currentRole==='student') goto('s-dashboard'); else goto('f-dashboard');
+}
+
+// ──────────────────────────────────────────────
+// NAVIGATION
+// ──────────────────────────────────────────────
+const pageMeta = {
+  's-dashboard':['Dashboard','Your learning overview'],
+  's-submit':['New Reflection','Document what you studied'],
+  's-journal':['My Journal','All your reflections'],
+  'f-dashboard':['Faculty Overview','System-wide statistics'],
+  'f-students':['Students','Track individual progress'],
+  'f-queue':['Review Queue','Reflections awaiting feedback'],
+};
+
+function goto(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(page).classList.add('active');
+  currentPage=page;
+  const m=pageMeta[page]||[page,''];
+  document.getElementById('page-title').textContent=m[0];
+  document.getElementById('page-sub').textContent=m[1];
+  // highlight nav
+  const navMap={'s-dashboard':0,'s-submit':1,'s-journal':2,'f-dashboard':0,'f-students':1,'f-queue':2};
+  const nav=document.querySelectorAll(currentRole==='student'?'#student-nav .nav-btn':'#faculty-nav .nav-btn');
+  if(nav[navMap[page]]) nav[navMap[page]].classList.add('active');
+  // load data
+  if(page==='s-dashboard') loadStudentDash();
+  else if(page==='s-journal') loadJournal();
+  else if(page==='f-dashboard') loadFacultyDash();
+  else if(page==='f-students') loadStudents();
+  else if(page==='f-queue') loadQueue();
+  closePanel();
+}
+
+function setRole(role, silent){
+  currentRole=role;
+  document.getElementById('student-nav').style.display=role==='student'?'block':'none';
+  document.getElementById('faculty-nav').style.display=role==='faculty'?'block':'none';
+  document.getElementById('rt-student').classList.toggle('active',role==='student');
+  document.getElementById('rt-faculty').classList.toggle('active',role==='faculty');
+  if(!silent){ if(role==='student') goto('s-dashboard'); else goto('f-dashboard'); }
+}
+
+function switchRole(r){ setRole(r); }
+
+// ──────────────────────────────────────────────
+// STUDENT DASHBOARD
+// ──────────────────────────────────────────────
+function loadStudentDash(){
+  const mine=REFLECTIONS.filter(r=>r.student.name===currentUser.name||currentUser.id==='u1');
+  document.getElementById('st-total').textContent=mine.length;
+  document.getElementById('st-reviewed').textContent=mine.filter(r=>r.status==='reviewed').length;
+  document.getElementById('st-pending').textContent=mine.filter(r=>r.status==='submitted').length;
+  const subjects=[...new Set(mine.map(r=>r.subject))];
+  document.getElementById('st-subjects').textContent=subjects.length;
+  const recent=mine.slice(0,4);
+  const el=document.getElementById('s-recent-list');
+  if(!recent.length){ el.innerHTML='<div class="empty"><div class="empty-icon">📝</div><p>No reflections yet. Start journaling!</p></div>'; return; }
+  el.innerHTML=recent.map(r=>riHTML(r,false)).join('');
+}
+
+// ──────────────────────────────────────────────
+// JOURNAL
+// ──────────────────────────────────────────────
+function loadJournal(){
+  let mine=REFLECTIONS.filter(r=>r.student.name===currentUser.name||currentUser.id==='u1');
+  if(statusFilter) mine=mine.filter(r=>r.status===statusFilter);
+  if(journalFilter) mine=mine.filter(r=>r.subject.toLowerCase().includes(journalFilter)||r.studiedTopics.toLowerCase().includes(journalFilter));
+  const el=document.getElementById('journal-list');
+  if(!mine.length){ el.innerHTML='<div class="empty"><div class="empty-icon">🔍</div><p>No reflections match your filter.</p></div>'; return; }
+  el.innerHTML=mine.map(r=>riHTML(r,false)).join('');
+}
+
+function filterJournal(v){ journalFilter=v.toLowerCase(); if(currentPage==='s-journal') loadJournal(); }
+function filterByStatus(v){ statusFilter=v; if(currentPage==='s-journal') loadJournal(); }
+
+function riHTML(r, isFaculty){
+  const moodClass={'great':'mood-great','good':'mood-good','okay':'mood-okay','struggling':'mood-struggling'}[r.mood]||'mood-good';
+  const tags=r.tags.slice(0,3).map(t=>`<span class="tag">${t}</span>`).join('');
+  const badge=r.status==='reviewed'?'<span class="badge badge-green">Reviewed</span>':'<span class="badge badge-amber">Pending</span>';
+  const student=isFaculty?`<span>${r.student.name}</span>`:'';
+  return `<div class="ri" onclick='openPanel("${r.id}")'><div class="ri-top"><div><div class="ri-subject">${r.subject}</div><div class="ri-meta">${student}${student?'·':''}Week ${r.weekNumber||'—'} &nbsp;·&nbsp; ${fmtDate(r.date)}</div></div><div style="display:flex;align-items:center;gap:6px">${badge}<div class="mood-dot ${moodClass}"></div></div></div><div class="ri-preview">${r.studiedTopics}</div><div class="ri-footer">${tags}</div></div>`;
+}
+
+function fmtDate(d){ try{ return new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}); }catch(e){ return d; } }
+
+// ──────────────────────────────────────────────
+// SUBMIT REFLECTION
+// ──────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('f-date').value=new Date().toISOString().split('T')[0];
+});
+
+function submitReflection(){
+  const subject=document.getElementById('f-subject').value.trim();
+  const studied=document.getElementById('f-studied').value.trim();
+  const understood=document.getElementById('f-understood').value.trim();
+  const err=document.getElementById('submit-error');
+  const suc=document.getElementById('submit-success');
+  err.style.display='none'; suc.style.display='none';
+
+  if(!subject){ err.style.display='block'; err.textContent='Subject is required.'; return; }
+  if(!studied){ err.style.display='block'; err.textContent='Please describe what you studied.'; return; }
+  if(!understood){ err.style.display='block'; err.textContent='Please describe concepts understood.'; return; }
+
+  const btn=document.getElementById('submit-btn');
+  btn.disabled=true; btn.textContent='Submitting...';
+
+  setTimeout(()=>{
+    const newR={
+      id:'r'+Date.now(), student:{name:currentUser.name,registrationNumber:currentUser.registrationNumber},
+      subject, periodType:document.getElementById('f-period').value,
+      weekNumber:parseInt(document.getElementById('f-week').value)||null,
+      date:document.getElementById('f-date').value,
+      studiedTopics:studied, conceptsUnderstood:understood,
+      challengesFaced:document.getElementById('f-challenges').value,
+      nextSteps:document.getElementById('f-nextsteps').value,
+      mood:document.getElementById('f-mood').value,
+      tags:document.getElementById('f-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
+      status:'submitted', feedback:[], createdAt:new Date().toISOString(),
+    };
+    REFLECTIONS.unshift(newR);
+    suc.style.display='block';
+    btn.disabled=false; btn.textContent='Submit Reflection';
+    clearForm(); showToast('Reflection submitted!');
+    setTimeout(()=>{ suc.style.display='none'; },3000);
+  },800);
+}
+
+function clearForm(){
+  ['f-subject','f-studied','f-understood','f-challenges','f-nextsteps','f-tags','f-week'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('f-mood').value='good';
+  document.getElementById('f-period').value='weekly';
+  document.getElementById('f-date').value=new Date().toISOString().split('T')[0];
+}
+
+// ──────────────────────────────────────────────
+// FACULTY
+// ──────────────────────────────────────────────
+function loadFacultyDash(){
+  document.getElementById('ft-students').textContent=DEMO_STUDENTS.length;
+  document.getElementById('ft-total').textContent=REFLECTIONS.length;
+  document.getElementById('ft-pending').textContent=REFLECTIONS.filter(r=>r.status==='submitted').length;
+  const week=new Date(); week.setDate(week.getDate()-7);
+  document.getElementById('ft-recent').textContent=REFLECTIONS.filter(r=>new Date(r.createdAt)>=week).length;
+  // subject breakdown
+  const bySubject={};
+  REFLECTIONS.forEach(r=>{ bySubject[r.subject]=(bySubject[r.subject]||0)+1; });
+  const sorted=Object.entries(bySubject).sort((a,b)=>b[1]-a[1]);
+  const max=sorted[0]?.[1]||1;
+  document.getElementById('f-subject-breakdown').innerHTML=sorted.map(([s,c])=>`
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+      <div style="font-size:13px;width:180px;flex-shrink:0">${s}</div>
+      <div style="flex:1"><div class="progress-bar" style="height:6px"><div class="progress-fill" style="width:${Math.round(c/max*100)}%"></div></div></div>
+      <div style="font-size:12px;color:var(--muted);width:24px;text-align:right">${c}</div>
+    </div>`).join('');
+}
+
+function loadStudents(){
+  const el=document.getElementById('student-list');
+  el.innerHTML=DEMO_STUDENTS.map(s=>{
+    const pct=s.stats.total?Math.round(s.stats.reviewed/s.stats.total*100):0;
+    return `<div class="student-row" onclick="viewStudentReflections('${s.id}','${s.name}')">
+      <div class="avatar">${s.name.split(' ').map(n=>n[0]).join('').slice(0,2)}</div>
+      <div><div class="sname">${s.name}</div><div class="smeta">${s.registrationNumber} · ${s.teamName}</div></div>
+      <div class="sright">
+        <div style="text-align:right">
+          <div style="font-size:12px;font-weight:500">${s.stats.total} reflections</div>
+          <div class="progress-wrap"><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div></div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">${pct}% reviewed</div>
+        </div>
+        ${s.stats.pending>0?`<span class="badge badge-amber">${s.stats.pending} pending</span>`:'<span class="badge badge-green">All reviewed</span>'}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function viewStudentReflections(id, name){
+  const r=REFLECTIONS.filter(x=>x.student.name===name);
+  if(!r.length){ showToast(`No reflections from ${name}`); return; }
+  openPanelCustom(`Reflections — ${name}`,`${r.length} entries`,
+    r.map(x=>`<div style="margin-bottom:0.75rem;cursor:pointer" onclick='openPanel("${x.id}")'>${riHTML(x,false)}</div>`).join('')
+  );
+}
+
+function loadQueue(){
+  const pending=REFLECTIONS.filter(r=>r.status==='submitted');
+  const el=document.getElementById('queue-list');
+  if(!pending.length){ el.innerHTML='<div class="empty"><div class="empty-icon">✅</div><p>All caught up! No pending reflections.</p></div>'; return; }
+  el.innerHTML=pending.map(r=>riHTML(r,true)).join('');
+}
+
+// ──────────────────────────────────────────────
+// DETAIL PANEL
+// ──────────────────────────────────────────────
+function openPanel(id){
+  const r=REFLECTIONS.find(x=>x.id===id);
+  if(!r) return;
+  selectedReflection=r;
+  document.getElementById('dp-subject').textContent=r.subject;
+  document.getElementById('dp-meta').textContent=`${r.student.name} · ${fmtDate(r.date)} · Week ${r.weekNumber||'—'}`;
+
+  const moodLabel={'great':'Great 😊','good':'Good 🙂','okay':'Okay 😐','struggling':'Struggling 😔'}[r.mood];
+  const tags=r.tags.length?r.tags.map(t=>`<span class="tag">${t}</span>`).join(''):'<span class="tag" style="color:var(--subtle)">no tags</span>';
+
+  const feedbackHTML=r.feedback.length
+    ?r.feedback.map(f=>`<div class="feedback-box"><p>${f.text}</p><div class="feedback-meta"><span>— ${f.faculty.name}</span>${f.rating?`<span class="stars">${'★'.repeat(f.rating)}${'☆'.repeat(5-f.rating)}</span>`:''}<span>${fmtDate(f.createdAt)}</span></div></div>`).join('')
+    :'<div style="font-size:13px;color:var(--subtle)">No feedback yet.</div>';
+
+  const facultyFeedbackForm=currentRole==='faculty'&&r.status==='submitted'?`
+    <div class="dp-section">
+      <div class="dp-label">Leave Feedback</div>
+      <textarea class="form-textarea" id="fb-text" placeholder="Write your feedback for this student..."></textarea>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:0.75rem">
+        <select class="form-select" style="width:auto" id="fb-rating">
+          <option value="">No rating</option>
+          <option value="5">★★★★★ Excellent</option>
+          <option value="4">★★★★☆ Good</option>
+          <option value="3">★★★☆☆ Average</option>
+          <option value="2">★★☆☆☆ Needs work</option>
+          <option value="1">★☆☆☆☆ Poor</option>
+        </select>
+        <button class="btn btn-primary btn-sm" onclick="submitFeedback('${r.id}')">Submit Feedback</button>
+      </div>
+    </div><div class="dp-divider"></div>`:
+    currentRole==='faculty'?'<div style="font-size:12px;color:var(--accent-mid);background:var(--accent-bg);padding:8px 12px;border-radius:var(--rs);margin-bottom:1rem">✓ Feedback already submitted</div>':'';
+
+  const aiSection=`
+    <div class="dp-section">
+      <div class="dp-label">AI Analysis</div>
+      <div id="ai-box"><button class="btn btn-ghost btn-sm" onclick="getAIFeedback('${r.id}')">✦ Generate AI insights</button></div>
+    </div>`;
+
+  document.getElementById('dp-body').innerHTML=`
+    <div class="dp-section" style="display:flex;gap:8px;flex-wrap:wrap">
+      ${r.status==='reviewed'?'<span class="badge badge-green">Reviewed</span>':'<span class="badge badge-amber">Pending Review</span>'}
+      <span class="badge badge-gray">${r.periodType}</span>
+      <span class="badge badge-gray">${moodLabel}</span>
+    </div>
+    <div class="dp-section"><div style="display:flex;gap:6px;flex-wrap:wrap">${tags}</div></div>
+    <div class="dp-divider"></div>
+    <div class="dp-section"><div class="dp-label">What was studied</div><div class="dp-text">${r.studiedTopics}</div></div>
+    <div class="dp-section"><div class="dp-label">Concepts understood</div><div class="dp-text">${r.conceptsUnderstood}</div></div>
+    ${r.challengesFaced?`<div class="dp-section"><div class="dp-label">Challenges faced</div><div class="dp-text">${r.challengesFaced}</div></div>`:''}
+    ${r.nextSteps?`<div class="dp-section"><div class="dp-label">Next steps</div><div class="dp-text">${r.nextSteps}</div></div>`:''}
+    <div class="dp-divider"></div>
+    ${facultyFeedbackForm}
+    <div class="dp-section"><div class="dp-label">Faculty Feedback</div>${feedbackHTML}</div>
+    <div class="dp-divider"></div>
+    ${aiSection}
+  `;
+
+  document.getElementById('detail-panel').classList.add('open');
+  document.getElementById('panel-overlay').classList.add('open');
+}
+
+function openPanelCustom(title, meta, bodyHTML){
+  document.getElementById('dp-subject').textContent=title;
+  document.getElementById('dp-meta').textContent=meta;
+  document.getElementById('dp-body').innerHTML=bodyHTML;
+  document.getElementById('detail-panel').classList.add('open');
+  document.getElementById('panel-overlay').classList.add('open');
+}
+
+function closePanel(){
+  document.getElementById('detail-panel').classList.remove('open');
+  document.getElementById('panel-overlay').classList.remove('open');
+  selectedReflection=null;
+}
+
+// ──────────────────────────────────────────────
+// SUBMIT FACULTY FEEDBACK
+// ──────────────────────────────────────────────
+function submitFeedback(rid){
+  const text=document.getElementById('fb-text')?.value.trim();
+  if(!text){ showToast('Please write feedback first'); return; }
+  const rating=document.getElementById('fb-rating')?.value;
+  const r=REFLECTIONS.find(x=>x.id===rid);
+  if(!r) return;
+  r.feedback.push({ faculty:{name:currentUser.name}, text, rating:rating?parseInt(rating):null, createdAt:new Date().toISOString() });
+  r.status='reviewed';
+  showToast('Feedback submitted!');
+  closePanel();
+  if(currentPage==='f-queue') loadQueue();
+  if(currentPage==='f-dashboard') loadFacultyDash();
+}
+
+// ──────────────────────────────────────────────
+// AI FEEDBACK via Anthropic API
+// ──────────────────────────────────────────────
+async function getAIFeedback(rid){
+  const r=REFLECTIONS.find(x=>x.id===rid);
+  if(!r) return;
+  const box=document.getElementById('ai-box');
+  box.innerHTML=`<div class="ai-loading">Analyzing reflection<div class="dots"><span></span><span></span><span></span></div></div>`;
+
+  const prompt=`You are a supportive academic mentor reviewing a student's weekly learning reflection. 
+Analyze this reflection and provide 3-4 sentences of constructive, encouraging feedback. 
+Focus on: what they're doing well, a specific suggestion to overcome their challenges, and one recommendation for deeper learning.
+Keep it warm, practical, and under 100 words.
+
+Student: ${r.student.name}
+Subject: ${r.subject}
+What they studied: ${r.studiedTopics}
+Concepts understood: ${r.conceptsUnderstood}
+Challenges: ${r.challengesFaced||'None mentioned'}
+Next steps: ${r.nextSteps||'None mentioned'}
+Mood: ${r.mood}`;
+
+  try {
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:250,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    const data=await res.json();
+    const text=data.content?.map(c=>c.text||'').join('')||'Unable to generate feedback.';
+    box.innerHTML=`<div style="background:var(--accent-bg);border:0.5px solid rgba(43,92,63,0.2);border-radius:var(--rs);padding:1rem"><div style="font-size:10px;font-weight:500;color:var(--accent);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">✦ AI Insights</div><p style="font-size:13px;line-height:1.75;color:var(--accent-mid)">${text}</p></div>`;
+  } catch(e) {
+    box.innerHTML=`<div style="font-size:13px;color:var(--muted);padding:8px 0">AI feedback unavailable in demo mode. In production, this connects to the Anthropic API to provide personalized mentor insights.</div>`;
+  }
+}
+
+// ──────────────────────────────────────────────
+// TOAST
+// ──────────────────────────────────────────────
+let toastTimer;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// Init: set today's date
+document.addEventListener('DOMContentLoaded',()=>{
+  const df=document.getElementById('f-date');
+  if(df) df.value=new Date().toISOString().split('T')[0];
+});
+</script>
+</body>
+</html>
