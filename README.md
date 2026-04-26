@@ -1,10 +1,5 @@
 # 📚 Reflect — Student Learning Reflection System
 
-**Project Title:** Student Learning Reflection System    
-**Course Code:** INT219/INT222
-**Registration Numbers:** 12408357/GurmanSingh 
-**GitHub:** [Your GitHub Link]  
-**Deployed Link:** [Your Deployed Link]
 
 
 
